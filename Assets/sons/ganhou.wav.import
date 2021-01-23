@@ -1,0 +1,21 @@
+[remap]
+
+importer="wav"
+type="AudioStreamSample"
+path="res://.import/ganhou.wav-905135a6f2494993d4212c09c2485c54.sample"
+
+[deps]
+
+source_file="res://Assets/sons/ganhou.wav"
+dest_files=[ "res://.import/ganhou.wav-905135a6f2494993d4212c09c2485c54.sample" ]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop=false
+compress/mode=0
