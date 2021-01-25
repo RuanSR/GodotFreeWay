@@ -1,20 +1,19 @@
 using Godot;
 using System;
+using System.Linq;
 
 public class Main : Node
 {
     private Random _rand = new Random();
-    private PackedScene _novoCarro = ResourceLoader.Load<PackedScene>("res://Scenes/Carros.tscn");
+    private PackedScene _novoCarro;
     private int[] _pdevagar = {600, 544, 324, 384, 216, 160};
     private int[] _prapido = {488, 272, 104};
-
-    private int _score1, _score2 = 0;
     public override void _Ready()
     {
+        _novoCarro = ResourceLoader.Load<PackedScene>("res://Scenes/Carros.tscn");
         GetNode<AudioStreamPlayer>("Tema").Play();
         GetNode<Button>("Button").Hide();
     }
-
     public void OnTimerCarroRapidoTimeOut(){
         var carroRapido = (Carros)_novoCarro.Instance();
         AddChild(carroRapido);
@@ -27,7 +26,6 @@ public class Main : Node
             y: 0
         );
     }
-
     public void OnTimerCarroLentoTimeOut(){
         var carroDevagar = (Carros)_novoCarro.Instance();
         AddChild(carroDevagar);
@@ -40,51 +38,56 @@ public class Main : Node
             y: 0
         );
     }
-
-    public void OnPlayerPontua(){
-        if(_score1 < 10){
-            _score1 += 1;
-            GetNode<AudioStreamPlayer>("Ponto").Play();
-            GetNode<Label>("Placar1").Text = _score1.ToString();
-        }
-        if(_score1 >= 10){
+    public void OnPlayerPontua(Player player){
+        MarcaPonto(player);
+        UpatePlacares(player);
+        VerificaGanhador(player);
+    }
+    private void VerificaGanhador(Player player)
+    {
+        var playerName = player.PlayerName.ToString().Replace("_"," ");
+        if(player.Score >= 10){
             GetNode<Button>("Button").Show();
-            GetNode<Label>("Resultado").Text = "P1 Ganhou!";
+            GetNode<Label>("Resultado").Text = $"{playerName} Ganhou!";
             GetNode<AudioStreamPlayer>("Tema").Stop();
             GetNode<AudioStreamPlayer>("Ganhou").Play();
             GetNode<Timer>("TimerCarroRapido").Stop();
             GetNode<Timer>("TimerCarroLento").Stop();
-
         }
     }
-    public void OnPlayer2Pontua(){
-        if(_score2 < 10){
-            _score2 += 1;
+    private void MarcaPonto(Player player){
+        if(player.Score < 10){
+            GD.Print(player.PlayerName);
+            player.Pontuar();
             GetNode<AudioStreamPlayer>("Ponto").Play();
-            GetNode<Label>("Placar2").Text = _score2.ToString();
-        }
-        if(_score2 >= 10){
-            GetNode<Button>("Button").Show();
-            GetNode<Label>("Resultado").Text = "P2 Ganhou!";
-            GetNode<AudioStreamPlayer>("Tema").Stop();
-            GetNode<AudioStreamPlayer>("Ganhou").Play();
-            GetNode<Timer>("TimerCarroRapido").Stop();
-            GetNode<Timer>("TimerCarroLento").Stop();
-
         }
     }
-
+    private void UpatePlacares(Player player){
+        if(player.PlayerName == PlayerName.PLAYER_1){
+            GetNode<Label>("Placar1").Text = player.Score.ToString();
+        }else if(player.PlayerName == PlayerName.PLAYER_2){
+            GetNode<Label>("Placar2").Text = player.Score.ToString();
+        }
+    }
     public void OnButtonPressed(){
-        _score1 = 0;
-        _score2 = 0;
+        ResetPlayers();
+        ResetUI();
+    }
+
+    private void ResetPlayers(){
+        var players = GetTree().GetNodesInGroup("Player").Cast<Player>();
+        foreach (var player in players){
+            player.ResetScore();
+            player.ResetPosition();
+        }
+    }
+    private void ResetUI(){
         GetNode<Button>("Button").Hide();
         GetNode<Label>("Placar1").Text = "0";
         GetNode<Label>("Placar2").Text = "0";
         GetNode<Label>("Resultado").Text = "";
         GetNode<Timer>("TimerCarroRapido").Start();
         GetNode<Timer>("TimerCarroLento").Start();
-        GetNode<Player>("Player").VoltaPos();
-        GetNode<Player2>("Player2").VoltaPos();
         GetNode<AudioStreamPlayer>("Tema").Play();
     }
 }
